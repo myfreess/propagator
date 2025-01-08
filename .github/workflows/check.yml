@@ -1,0 +1,53 @@
+name: check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install
+        run: |
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
+          echo "$HOME/.moon/bin" >> $GITHUB_PATH
+
+      - name: moon version
+        run: |
+          moon version --all
+          moonrun --version
+
+      - name: moon update
+        run: moon update
+
+      - name: moon build
+        run: |
+          moon build --target wasm
+          moon build --target wasm-gc
+
+      - name: moon test
+        run: |
+          moon test --target wasm
+          moon test --target wasm-gc
+          wc -c target/wasm/debug/test/propagator/propagator.blackbox_test.wasm
+          wc -c target/wasm-gc/debug/test/propagator/propagator.blackbox_test.wasm
+      
+      - name: moon clean
+        run: moon clean
+      
+      - name: moon test with dedup_wasm
+        run: |
+          moon test --target wasm
+          moon test --target wasm-gc
+          wc -c target/wasm/debug/test/propagator/propagator.blackbox_test.wasm
+          wc -c target/wasm-gc/debug/test/propagator/propagator.blackbox_test.wasm
+        env: 
+          MOONC_INTERNAL_PARAMS: dedup_wasm = 1 |
