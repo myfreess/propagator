@@ -1,0 +1,50 @@
+package "myfreess/propagator/propagator"
+
+import(
+  "moonbitlang/core/bigint"
+  "moonbitlang/core/immut/sorted_set"
+)
+
+// Values
+
+// Types and methods
+type Cell[T]
+fn[T] Cell::apply_to(Self[T], (T) -> Unit raise MergeError) -> Unit raise MergeError
+fn[T] Cell::attach(Self[T], watcher~ : (T) -> Unit raise MergeError) -> Unit raise MergeError
+fn[X, Y] Cell::attach2(watcher~ : (X, Y) -> Unit raise MergeError, Self[X], Self[Y]) -> Unit raise MergeError
+fn[T] Cell::content(Self[T]) -> T?
+fn[I, O] Cell::lift((I) -> O, Self[I], output~ : Self[O]) -> Unit raise MergeError
+fn[X, Y, O] Cell::lift2((X, Y) -> O, Self[X], Self[Y], output~ : Self[O]) -> Unit raise MergeError
+fn[T] Cell::new(merge~ : (T, T) -> Change[T]) -> Self[T]
+fn[T : Propagated] Cell::new_default() -> Self[T]
+fn[T : Propagated] Cell::new_with(merge~ : (T, T) -> Change[T] = .., known? : T) -> Self[T]
+fn[T] Cell::op_equal(Self[T], Self[T]) -> Bool
+fn[T] Cell::unify(Self[T], Self[T]) -> Unit raise MergeError
+fn[T] Cell::write(Self[T], T) -> Unit raise MergeError
+
+type Change[T]
+
+type MergeError
+
+pub(all) struct Supported[T] {
+  support : @sorted_set.T[String]
+  value : T
+}
+impl[T : Propagated] Propagated for Supported[T]
+
+// Type aliases
+
+// Traits
+pub(open) trait Propagated {
+  merge(Self, Self) -> Change[Self]
+}
+impl Propagated for Bool
+impl Propagated for Int
+impl Propagated for Int64
+impl Propagated for UInt
+impl Propagated for UInt64
+impl Propagated for Float
+impl Propagated for Double
+impl Propagated for @bigint.BigInt
+impl[X : Propagated, Y : Propagated] Propagated for (X, Y)
+
