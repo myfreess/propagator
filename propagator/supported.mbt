@@ -17,7 +17,7 @@ pub impl[T : Propagated] Propagated for Supported[T] with merge(self, other) {
       Contradiction(
         support=@immut/sorted_set.union(
           support,
-          @immut/sorted_set.union(self.support, other.support),
+          self.support + other.support,
         ),
         err_msg~,
       )
